@@ -3,7 +3,6 @@ package main
 import (
 	"calculator/calculatorpb"
 	"context"
-	"fmt"
 	"log"
 	"net"
 
@@ -13,7 +12,7 @@ import (
 type server struct{}
 
 func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
-	fmt.Printf("Sum rpc invoked with req: %v\n", req)
+	log.Printf("Sum rpc invoked with req: %v\n", req)
 	return &calculatorpb.SumResponse{
 		Result: req.NumA + req.NumB,
 	}, nil
@@ -27,7 +26,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	calculatorpb.RegisterSumServiceServer(s, &server{})
+	calculatorpb.RegisterCalculatorServiceServer(s, &server{})
 
 	if err = s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

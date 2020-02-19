@@ -3,7 +3,6 @@ package main
 import (
 	"calculator/calculatorpb"
 	"context"
-	"fmt"
 	"log"
 
 	"google.golang.org/grpc"
@@ -16,7 +15,7 @@ func main() {
 	}
 	defer cc.Close()
 
-	c := calculatorpb.NewSumServiceClient(cc)
+	c := calculatorpb.NewCalculatorServiceClient(cc)
 	req := &calculatorpb.SumRequest{
 		NumA: 3,
 		NumB: 10,
@@ -25,5 +24,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error calling RPC: %v", err)
 	}
-	fmt.Printf("Response: %d\n", res.Result)
+	log.Printf("Response: %d\n", res.Result)
 }
