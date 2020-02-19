@@ -12,6 +12,15 @@ message SumResponse {
     int32 Result = 1;
 }
 
+message PrimeNumberDecompositionRequest{
+    int32 input = 1;
+}
+
+message PrimeNumberDecompositionResponse{
+    int32 result = 1;
+}
+
 service CalculatorService{
     rpc Sum (SumRequest) returns (SumResponse){};
+    rpc PrimeNumberDecomposition (PrimeNumberDecompositionRequest) returns (stream PrimeNumberDecompositionResponse) {};
 }
