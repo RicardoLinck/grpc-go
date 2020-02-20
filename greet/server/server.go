@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"greet/greetpb"
+	"io"
 	"log"
 	"math/rand"
 	"net"
@@ -43,6 +44,26 @@ func (*server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb
 	wg.Wait()
 
 	return nil
+}
+
+func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
+	log.Println("LongGreet rpc invoked!")
+	result := ""
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&greetpb.LongGreetResponse{
+				Result: result,
+			})
+		}
+
+		if err != nil {
+			log.Fatalf("Error while reading stream: %v", err)
+		}
+
+		firstName := req.Greeting.FirstName
+		result += fmt.Sprintf("Helo %s! ", firstName)
+	}
 }
 
 func main() {
