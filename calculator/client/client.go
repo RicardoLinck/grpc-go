@@ -19,6 +19,7 @@ func main() {
 	c := calculatorpb.NewCalculatorServiceClient(cc)
 	sum(c)
 	primeNumberDecomposition(c)
+	computeAverage(c)
 }
 
 func sum(c calculatorpb.CalculatorServiceClient) {
@@ -52,4 +53,28 @@ func primeNumberDecomposition(c calculatorpb.CalculatorServiceClient) {
 		}
 		log.Println(res.Result)
 	}
+}
+
+func computeAverage(c calculatorpb.CalculatorServiceClient) {
+	reqs := []*calculatorpb.ComputeAverageRequest{
+		{Input: 1},
+		{Input: 2},
+		{Input: 3},
+		{Input: 4},
+	}
+	stream, err := c.ComputeAverage(context.Background())
+	if err != nil {
+		log.Fatalf("Error calling ComputeAverage RPC: %v", err)
+	}
+
+	for _, req := range reqs {
+		stream.Send(req)
+	}
+
+	response, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Error while receiving response from ComputeAverage RPC: %v", err)
+	}
+
+	log.Printf("Response: %s\n", response)
 }
