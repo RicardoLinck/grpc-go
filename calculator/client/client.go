@@ -17,9 +17,10 @@ func main() {
 	defer cc.Close()
 
 	c := calculatorpb.NewCalculatorServiceClient(cc)
-	sum(c)
-	primeNumberDecomposition(c)
-	computeAverage(c)
+	// sum(c)
+	// primeNumberDecomposition(c)
+	// computeAverage(c)
+	findMaximum(c)
 }
 
 func sum(c calculatorpb.CalculatorServiceClient) {
@@ -77,4 +78,48 @@ func computeAverage(c calculatorpb.CalculatorServiceClient) {
 	}
 
 	log.Printf("Response: %s\n", response)
+}
+
+func findMaximum(c calculatorpb.CalculatorServiceClient) {
+	reqs := []*calculatorpb.FindMaximumRequest{
+		{Input: 1},
+		{Input: 5},
+		{Input: 3},
+		{Input: 6},
+		{Input: 2},
+		{Input: 20},
+	}
+	stream, err := c.FindMaximum(context.Background())
+	if err != nil {
+		log.Fatalf("Error calling ComputeAverage RPC: %v", err)
+	}
+
+	wc := make(chan struct{})
+
+	go func() {
+		for _, req := range reqs {
+			stream.Send(req)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			response, err := stream.Recv()
+
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Error while receiving response from ComputeAverage RPC: %v", err)
+				break
+			}
+
+			log.Printf("Response: %s\n", response)
+		}
+		close(wc)
+	}()
+
+	<-wc
+
 }
