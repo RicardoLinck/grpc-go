@@ -17,9 +17,10 @@ func main() {
 	}
 	defer cc.Close()
 	c := greetpb.NewGreetServiceClient(cc)
-	greet(c)
-	greetManyTimes(c)
-	longGreet(c)
+	// greet(c)
+	// greetManyTimes(c)
+	// longGreet(c)
+	greetEveryone(c)
 }
 
 func greet(c greetpb.GreetServiceClient) {
@@ -86,5 +87,49 @@ func longGreet(c greetpb.GreetServiceClient) {
 	}
 
 	log.Printf("Response: %s\n", response)
+}
 
+func greetEveryone(c greetpb.GreetServiceClient) {
+	reqs := []*greetpb.GreetEveryoneRequest{
+		{Greeting: &greetpb.Greeting{
+			FirstName: "Ricardo",
+			LastName:  "Linck",
+		}},
+		{Greeting: &greetpb.Greeting{
+			FirstName: "Carolina",
+			LastName:  "Pacheco",
+		}},
+	}
+	stream, err := c.GreetEveryone(context.Background())
+	if err != nil {
+		log.Fatalf("Error calling GreetEveryone RPC: %v", err)
+	}
+
+	wc := make(chan struct{})
+
+	go func() {
+		for _, req := range reqs {
+			stream.Send(req)
+		}
+		stream.CloseSend()
+
+	}()
+
+	go func() {
+		for {
+			response, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Error while receiving response from GreetEveryone RPC: %v", err)
+				break
+			}
+
+			log.Printf("Response: %s\n", response)
+		}
+		close(wc)
+	}()
+
+	<-wc
 }
