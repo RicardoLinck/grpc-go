@@ -12,12 +12,21 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type server struct{}
 
 func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
 	log.Println("Greet rpc invoked!")
+
+	time.Sleep(500 * time.Millisecond)
+
+	if ctx.Err() == context.Canceled {
+		return nil, status.Error(codes.Canceled, "Client cancelled the request")
+	}
+
 	first := req.Greeting.FirstName
 	return &greetpb.GreetResponse{
 		Result: fmt.Sprintf("Hello %s", first),

@@ -5,8 +5,11 @@ import (
 	"greet/greetpb"
 	"io"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -20,7 +23,8 @@ func main() {
 	// greet(c)
 	// greetManyTimes(c)
 	// longGreet(c)
-	greetEveryone(c)
+	// greetEveryone(c)
+	greetWithTimeout(c)
 }
 
 func greet(c greetpb.GreetServiceClient) {
@@ -32,6 +36,30 @@ func greet(c greetpb.GreetServiceClient) {
 	}
 	res, err := c.Greet(context.Background(), req)
 	if err != nil {
+		log.Fatalf("Error calling Greet RPC: %v", err)
+	}
+	log.Printf("Response: %s\n", res.Result)
+}
+
+func greetWithTimeout(c greetpb.GreetServiceClient) {
+	req := &greetpb.GreetRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: "Ricardo",
+			LastName:  "Linck",
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	res, err := c.Greet(ctx, req)
+	if err != nil {
+		grpcErr, ok := status.FromError(err)
+
+		if ok {
+			if grpcErr.Code() == codes.DeadlineExceeded {
+				log.Fatal("Deadline Exceeded")
+			}
+		}
+
 		log.Fatalf("Error calling Greet RPC: %v", err)
 	}
 	log.Printf("Response: %s\n", res.Result)
