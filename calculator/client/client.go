@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 	defer cc.Close()
 
 	c := calculatorpb.NewCalculatorServiceClient(cc)
-	// sum(c)
+	sum(c)
 	// primeNumberDecomposition(c)
 	// computeAverage(c)
 	findMaximum(c)
@@ -28,7 +29,8 @@ func sum(c calculatorpb.CalculatorServiceClient) {
 		NumA: 3,
 		NumB: 10,
 	}
-	res, err := c.Sum(context.Background(), req)
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "user", "test")
+	res, err := c.Sum(ctx, req)
 	if err != nil {
 		log.Fatalf("Error calling Sum RPC: %v", err)
 	}

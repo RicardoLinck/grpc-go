@@ -8,6 +8,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -15,6 +16,8 @@ type server struct{}
 
 func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
 	log.Printf("Sum rpc invoked with req: %v\n", req)
+	md, _ := metadata.FromIncomingContext(ctx)
+	log.Printf("Metadata received: %v", md)
 	return &calculatorpb.SumResponse{
 		Result: req.NumA + req.NumB,
 	}, nil
